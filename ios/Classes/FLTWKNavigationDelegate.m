@@ -29,9 +29,24 @@
     decisionHandler(WKNavigationActionPolicyAllow);
     return;
   }
+
+  static NSDictionary<NSNumber *, NSString *> *navigationTypes;
+  static dispatch_once_t onceToken;
+
+  dispatch_once(&onceToken, ^{
+    navigationTypes = @{
+      @(WKNavigationTypeLinkActivated): @"click",
+      @(WKNavigationTypeFormSubmitted): @"formsubmit",
+      @(WKNavigationTypeBackForward): @"backforward",
+      @(WKNavigationTypeReload): @"reload",
+      @(WKNavigationTypeFormResubmitted): @"formresubmit",
+      @(WKNavigationTypeOther): @"other",
+    };
+  });
   NSDictionary *arguments = @{
     @"url" : navigationAction.request.URL.absoluteString,
-    @"isForMainFrame" : @(navigationAction.targetFrame.isMainFrame)
+    @"isForMainFrame" : @(navigationAction.targetFrame.isMainFrame),
+    @"navigationType": navigationTypes[@(navigationAction.navigationType)],
   };
   [_methodChannel invokeMethod:@"navigationRequest"
                      arguments:arguments
